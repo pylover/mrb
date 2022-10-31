@@ -10,6 +10,7 @@ test_mrb_init() {
     struct mrb *b = mrb_create(pagesize);
 
     isnotnull(b);
+    isnotnull(b->buff);
     eqint(pagesize, b->size);
     eqint(pagesize, b->avail);
     eqint(0, b->used);

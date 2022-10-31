@@ -44,4 +44,5 @@ list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 add_executable(mrb_test
     $<TARGET_OBJECTS:mrb> 
     mrb_test.c)
+target_link_libraries(mrb_test PUBLIC clog)
 add_test(NAME mrb_test COMMAND mrb_test)
