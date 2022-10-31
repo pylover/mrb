@@ -6,13 +6,13 @@
 
 void
 test_mrb_init() {
-    int pagesize = getpagesize();
-    struct mrb *b = mrb_create(pagesize);
+    size_t size = getpagesize();
+    struct mrb *b = mrb_create(size);
 
     isnotnull(b);
-    isnotnull(b->buff);
-    eqint(pagesize, b->size);
-    eqint(pagesize, b->avail);
+    isnull(b->buff);
+    eqint(size, b->size);
+    eqint(size, b->avail);
     eqint(0, b->used);
 }
 

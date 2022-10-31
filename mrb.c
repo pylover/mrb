@@ -8,7 +8,6 @@
 struct mrb *
 mrb_create(size_t size) {
     int pagesize = getpagesize();
-    unsigned char *buff;
     struct mrb *b;
     size_t realsize;
 
@@ -23,16 +22,19 @@ mrb_create(size_t size) {
     b->used = 0;
    
     /* Calculate the real size (multiple of pagesize). */
-    int mod = size % pagesize;
-    if (mod) {
+    if (size % pagesize) {
         realsize = (size / pagesize + 1) * pagesize;
     }
     else {
         realsize = size;
     }
 
+    /* Create a temporary file with requested size as the backend for mmap. */
+    const int fd = fileno(tmpfile());
+    ftruncate(fd, realsize);
+  
     /* Allocate the underlying backed buffer. */
-    buff = mmap(
+    b->buff = mmap(
             NULL, 
             realsize * 2,
             PROT_NONE, 
@@ -40,7 +42,45 @@ mrb_create(size_t size) {
             -1, 
             0
         );
+    if (b->buff == MAP_FAILED) {
+        close(fd);
+        free(b);
+        return NULL;
+    }
 
-    DEBUG("buff: %p", buff);
+    void *first = mmap(
+            b->buff, 
+            realsize, 
+            PROT_READ | PROT_WRITE,
+            MAP_FIXED | MAP_SHARED,
+            fd,
+            0
+        );
+
+    if (first == MAP_FAILED) {
+        munmap(b->buff, realsize * 2);
+        close(fd);
+        free(b);
+        return NULL;
+    }
+
+    void *second = mmap(
+            b->buff + realsize, 
+            realsize, 
+            PROT_READ | PROT_WRITE,
+            MAP_FIXED | MAP_SHARED,
+            fd,
+            0
+        );
+ 
+    if (second == MAP_FAILED) {
+        munmap(first, realsize);
+        munmap(b->buff, realsize * 2);
+        close(fd);
+        free(b);
+        return NULL;
+    }
+
+    close(fd);
     return b;
 }
