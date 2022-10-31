@@ -17,4 +17,8 @@ struct mrb *
 mrb_create(size_t pagesize);
 
 
+void
+mrb_close(struct mrb *m);
+
+
 #endif

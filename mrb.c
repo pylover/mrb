@@ -74,7 +74,6 @@ mrb_create(size_t size) {
         );
  
     if (second == MAP_FAILED) {
-        munmap(first, realsize);
         munmap(b->buff, realsize * 2);
         close(fd);
         free(b);
@@ -83,4 +82,12 @@ mrb_create(size_t size) {
 
     close(fd);
     return b;
+}
+
+
+void
+mrb_close(struct mrb *b) {
+    munmap(b->buff, b->size * 2);
+    free(b);
+    b->buff = NULL;
 }
