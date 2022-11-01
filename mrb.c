@@ -5,38 +5,32 @@
 #include <sys/mman.h>
 
 
-struct mrb *
-mrb_create(size_t size) {
+int
+mrb_init(struct mrb *b, size_t size) {
     int pagesize = getpagesize();
-    struct mrb *b;
-    size_t realsize;
-
-    /* Allocate memory for mrb structure. */
-    b = malloc(sizeof(struct mrb));
-    if (b == NULL) {
-        return b;
-    }
-
-    b->size = size;
-    b->avail = size;
-    b->used = 0;
    
     /* Calculate the real size (multiple of pagesize). */
     if (size % pagesize) {
-        realsize = (size / pagesize + 1) * pagesize;
+        ERROR(
+            "Invalid size: %lu, size should be multiple of pagesize, see "
+            "getpagesize(2).", 
+            size
+        );
+        return -1;
     }
-    else {
-        realsize = size;
-    }
+
+    b->size = size;
+    b->writer = 0;
+    b->reader = 0;
 
     /* Create a temporary file with requested size as the backend for mmap. */
     const int fd = fileno(tmpfile());
-    ftruncate(fd, realsize);
+    ftruncate(fd, b->size);
   
     /* Allocate the underlying backed buffer. */
     b->buff = mmap(
             NULL, 
-            realsize * 2,
+            b->size * 2,
             PROT_NONE, 
             MAP_ANONYMOUS | MAP_PRIVATE,
             -1, 
@@ -44,50 +38,88 @@ mrb_create(size_t size) {
         );
     if (b->buff == MAP_FAILED) {
         close(fd);
-        free(b);
-        return NULL;
+        return -1;
     }
 
-    void *first = mmap(
+    b->first = mmap(
             b->buff, 
-            realsize, 
+            b->size, 
             PROT_READ | PROT_WRITE,
             MAP_FIXED | MAP_SHARED,
             fd,
             0
         );
 
-    if (first == MAP_FAILED) {
-        munmap(b->buff, realsize * 2);
+    if (b->first == MAP_FAILED) {
+        munmap(b->buff, b->size * 2);
         close(fd);
-        free(b);
-        return NULL;
+        return -1;
     }
 
-    void *second = mmap(
-            b->buff + realsize, 
-            realsize, 
+    b->second = mmap(
+            b->buff + b->size, 
+            b->size, 
             PROT_READ | PROT_WRITE,
             MAP_FIXED | MAP_SHARED,
             fd,
             0
         );
  
-    if (second == MAP_FAILED) {
-        munmap(b->buff, realsize * 2);
+    if (b->second == MAP_FAILED) {
+        munmap(b->buff, b->size * 2);
         close(fd);
+        return -1;
+    }
+
+    close(fd);
+    return 0;
+}
+
+
+struct mrb *
+mrb_create(size_t size) {
+    struct mrb *b;
+
+    /* Allocate memory for mrb structure. */
+    b = malloc(sizeof(struct mrb));
+    if (b == NULL) {
+        return b;
+    }
+
+    if (mrb_init(b, size)) {
         free(b);
         return NULL;
     }
 
-    close(fd);
     return b;
 }
 
 
-void
-mrb_close(struct mrb *b) {
-    munmap(b->buff, b->size * 2);
+int
+mrb_deinit(struct mrb *b) {
+    /* unmap second part */
+    if (munmap(b->buff + b->size, b->size)) { 
+        return -1;
+    }
+
+    /* unmap first part */
+    if (munmap(b->buff, b->size)) {
+        return -1;
+    }
+
+    /* unmap backed buffer */
+    if (munmap(b->buff, b->size * 2)) {
+        return -1;
+    }
+    return 0;
+}
+
+
+int
+mrb_destroy(struct mrb *b) {
+    if (mrb_deinit(b)) {
+        return -1;
+    }
     free(b);
-    b->buff = NULL;
+    return 0;
 }
