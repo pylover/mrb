@@ -5,6 +5,9 @@
 #include <sys/mman.h>
 
 
+#define _MIN(a, b) ((a) < (b)) ? (a) : (b)
+
+
 int
 mrb_init(struct mrb *b, size_t size) {
     int pagesize = getpagesize();
@@ -122,4 +125,50 @@ mrb_destroy(struct mrb *b) {
     }
     free(b);
     return 0;
+}
+
+
+size_t
+mrb_space_available(struct mrb *b) {
+    // 11000111
+    //   w  r
+    if (b->writer < b->reader) {
+        return b->reader - b->writer - 1;
+    }
+    
+    // 00111100
+    //   r   w
+    return b->size - (b->writer - b->reader) - 1;
+}
+
+
+size_t
+mrb_space_used(struct mrb *b) {
+    // 00111000
+    //   r  w
+    if (b->writer >= b->reader) {
+        return b->writer - b->reader;
+    }
+    
+    // 11000111
+    //   w  r
+    return b->size - (b->reader - b->writer);
+}
+
+
+size_t
+mrb_put(struct mrb *b, char *source, size_t size) {
+    size_t amount = _MIN(size, mrb_space_available(b));
+    memcpy(b->buff + b->writer, source, amount);
+    b->writer = (b->writer + amount) % b->size;
+    return amount;
+}
+
+
+size_t
+mrb_get(struct mrb *b, char *dest, size_t size) {
+    size_t amount = _MIN(size, mrb_space_used(b));
+    memcpy(dest, b->buff + b->reader, amount);
+    b->reader = (b->reader + amount) % b->size;
+    return amount;
 }

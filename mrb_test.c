@@ -2,6 +2,17 @@
 
 #include <cutest.h>
 #include <unistd.h>
+#include <fcntl.h>
+
+
+static int
+rand_open() {
+    int fd = open("/dev/urandom", O_RDONLY | O_NONBLOCK);
+    if (fd < 0) {
+        return -1;
+    }
+    return fd;
+}
 
 
 void
@@ -37,6 +48,27 @@ test_mrb_init_deinit() {
     eqint(0, mrb_deinit(&b));
 }
 
+
+void
+test_mrb_put_get() {
+    /* Setup */
+    size_t size = getpagesize();
+    struct mrb *b = mrb_create(size);
+
+    /* Put 3 chars */
+    eqint(3, mrb_put(b, "foo", 3));
+    eqint(3, b->writer);
+    eqint(3, mrb_space_used(b));
+    eqint(size - 4, mrb_space_available(b));
+
+    /* Ger 3 chars from buffer */ 
+    char data[size];
+    eqint(3, mrb_get(b, data, 3));
+    eqnstr("foo", data, 3);
+
+    /* Teardown */
+    mrb_destroy(b);
+}
 
 
 /*
@@ -86,5 +118,6 @@ Move data from one VRB to another.
 int main() {
     test_mrb_create_close();
     test_mrb_init_deinit();
+    test_mrb_put_get();
     return EXIT_SUCCESS;
 }

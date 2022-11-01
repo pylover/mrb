@@ -33,4 +33,20 @@ int
 mrb_destroy(struct mrb *b);
 
 
+size_t
+mrb_space_available(struct mrb *b);
+
+
+size_t
+mrb_space_used(struct mrb *b);
+
+
+size_t
+mrb_put(struct mrb *b, char *source, size_t size);
+
+
+size_t
+mrb_get(struct mrb *b, char *dest, size_t size);
+
+
 #endif
