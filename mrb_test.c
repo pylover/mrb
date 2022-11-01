@@ -15,8 +15,8 @@ test_mrb_create_close() {
     eqint(0, b->writer);
     eqint(0, b->reader);
 
-    // memcpy(b->buff, "foo", 3);
-    // eqnstr("foo", b->buff, 3);
+    memcpy(b->buff, "foo", 3);
+    eqnstr("foo", b->buff, 3);
     eqint(0, mrb_destroy(b));
 }
 
