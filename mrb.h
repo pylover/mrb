@@ -3,6 +3,7 @@
 
 
 #include <stdlib.h>
+#include <stdbool.h>
 
 
 struct mrb {
@@ -43,6 +44,18 @@ mrb_put(struct mrb *b, char *source, size_t size);
 
 size_t
 mrb_get(struct mrb *b, char *dest, size_t size);
+
+
+size_t
+mrb_space(struct mrb *b);
+
+
+bool
+mrb_is_empty(struct mrb *b);
+
+
+bool
+mrb_is_full(struct mrb *b);
 
 
 #endif

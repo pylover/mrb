@@ -25,6 +25,7 @@ test_mrb_create_close() {
     eqint(size, b->size);
     eqint(0, b->writer);
     eqint(0, b->reader);
+    istrue(mrb_is_empty(b));
 
     memcpy(b->buff, "foo", 3);
     eqnstr("foo", b->buff, 3);
@@ -80,37 +81,50 @@ test_mrb_put_get() {
     eqint(size - 2, mrb_get(b, out, size - 2));
     eqint(1, b->writer);
     eqint(1, b->reader);
+    eqint(4095, mrb_space_available(b));
+    istrue(mrb_is_empty(b));
     eqnstr(in, out, size - 2);
 
     /* Teardown */
+    close(ufd);
+    mrb_destroy(b);
+}
+
+
+void
+test_mrb_is_full_is_empty() {
+    /* Setup */
+    size_t size = getpagesize();
+    char in[size];
+    char out[size];
+    struct mrb *b = mrb_create(size);
+    int ufd = rand_open();
+    istrue(mrb_is_empty(b));
+
+    /* Provide some random data and put them */
+    read(ufd, in, size);
+    eqint(size - 1, mrb_put(b, in, size));
+    eqint(4095, b->writer);
+    eqint(0, b->reader);
+    istrue(mrb_is_full(b));
+    eqint(4095, mrb_space_used(b));
+
+    /* Get all available data */
+    eqint(size - 1, mrb_get(b, out, size));
+    istrue(mrb_is_empty(b));
+    eqint(4095, b->writer);
+    eqint(4095, b->reader);
+    eqint(4095, mrb_space_available(b));
+    istrue(mrb_is_empty(b));
+    eqnstr(in, out, size - 1);
+
+    /* Teardown */
+    close(ufd);
     mrb_destroy(b);
 }
 
 
 /*
-Uninitialize a virtual ring buffer in a static struct.
-vrb_capacity
-Obtain the total buffer capacity of a VRB.
-vrb_data_len
-Obtain the length of data in the buffer.
-vrb_data_ptr
-Obtain the pointer to the data in the buffer.
-vrb_space_len
-Obtain the length of empty space in the buffer.
-vrb_space_ptr
-Obtain the pointer to the empty space in the buffer.
-vrb_is_empty
-Determine if the buffer is currently empty.
-vrb_is_full
-Determine if the buffer is currently full.
-vrb_is_not_empty
-Determine if there is at least some data in the buffer.
-vrb_is_not_full
-Determine if there is at least some empty space in the buffer.
-vrb_give
-Indicate how much empty space had data put in by the caller.
-vrb_take
-Indicate how much data in the buffer was used by the caller.
 vrb_get_min
 Copy a minimum amount of data from the VRB only if it will fit.
 vrb_put_all
@@ -131,5 +145,6 @@ int main() {
     test_mrb_create_close();
     test_mrb_init_deinit();
     test_mrb_put_get();
+    test_mrb_is_full_is_empty();
     return EXIT_SUCCESS;
 }

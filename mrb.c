@@ -128,6 +128,16 @@ mrb_destroy(struct mrb *b) {
 }
 
 
+/** Obtain the total buffer capacity of a VRB.
+ */
+size_t
+mrb_space(struct mrb *b) {
+    return b->size;
+}
+
+
+/** Obtain the length of empty space in the buffer.
+ */
 size_t
 mrb_space_available(struct mrb *b) {
     // 11000111
@@ -142,12 +152,8 @@ mrb_space_available(struct mrb *b) {
 }
 
 
-size_t
-mrb_space(struct mrb *b) {
-    return b->size;
-}
-
-
+/** Obtain the length of data in the buffer.
+ */
 size_t
 mrb_space_used(struct mrb *b) {
     // 00111000
@@ -159,6 +165,22 @@ mrb_space_used(struct mrb *b) {
     // 11000111
     //   w  r
     return b->size - (b->reader - b->writer);
+}
+
+
+/** Determine if the buffer is currently empty.
+ */
+bool
+mrb_is_empty(struct mrb *b) {
+    return b->reader == b->writer;
+}
+
+
+/** Determine if the buffer is currently full.
+ */
+bool
+mrb_is_full(struct mrb *b) {
+    return b->size == (mrb_space_used(b) + 1);
 }
 
 
