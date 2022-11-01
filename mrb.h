@@ -10,10 +10,6 @@ struct mrb {
     size_t size;
     int writer;
     int reader;
-
-    /* Private members */
-    unsigned char *first;
-    unsigned char *second;
 };
 
 

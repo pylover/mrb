@@ -53,7 +53,10 @@ void
 test_mrb_put_get() {
     /* Setup */
     size_t size = getpagesize();
+    char in[size];
+    char out[size];
     struct mrb *b = mrb_create(size);
+    int ufd = rand_open();
 
     /* Put 3 chars */
     eqint(3, mrb_put(b, "foo", 3));
@@ -62,9 +65,22 @@ test_mrb_put_get() {
     eqint(size - 4, mrb_space_available(b));
 
     /* Ger 3 chars from buffer */ 
-    char data[size];
-    eqint(3, mrb_get(b, data, 3));
-    eqnstr("foo", data, 3);
+    eqint(3, mrb_get(b, out, 3));
+    eqnstr("foo", out, 3);
+    eqint(3, b->writer);
+    eqint(3, b->reader);
+
+    /* Provide some random data and put them */
+    read(ufd, in, size);
+    eqint(size - 2, mrb_put(b, in, size - 2));
+    eqint(1, b->writer);
+    eqint(3, b->reader);
+
+    /* Get all available data */
+    eqint(size - 2, mrb_get(b, out, size - 2));
+    eqint(1, b->writer);
+    eqint(1, b->reader);
+    eqnstr(in, out, size - 2);
 
     /* Teardown */
     mrb_destroy(b);
@@ -95,12 +111,8 @@ vrb_give
 Indicate how much empty space had data put in by the caller.
 vrb_take
 Indicate how much data in the buffer was used by the caller.
-vrb_get
-Copy data from the virtual ring buffer to a caller location.
 vrb_get_min
 Copy a minimum amount of data from the VRB only if it will fit.
-vrb_put
-Copy data from a caller location to the virtual ring buffer.
 vrb_put_all
 Copy data to the VRB only if all of it will fit.
 vrb_read

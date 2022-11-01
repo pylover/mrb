@@ -44,7 +44,7 @@ mrb_init(struct mrb *b, size_t size) {
         return -1;
     }
 
-    b->first = mmap(
+    unsigned char *first = mmap(
             b->buff, 
             b->size, 
             PROT_READ | PROT_WRITE,
@@ -53,13 +53,13 @@ mrb_init(struct mrb *b, size_t size) {
             0
         );
 
-    if (b->first == MAP_FAILED) {
+    if (first == MAP_FAILED) {
         munmap(b->buff, b->size * 2);
         close(fd);
         return -1;
     }
 
-    b->second = mmap(
+    unsigned char *second = mmap(
             b->buff + b->size, 
             b->size, 
             PROT_READ | PROT_WRITE,
@@ -68,7 +68,7 @@ mrb_init(struct mrb *b, size_t size) {
             0
         );
  
-    if (b->second == MAP_FAILED) {
+    if (second == MAP_FAILED) {
         munmap(b->buff, b->size * 2);
         close(fd);
         return -1;
@@ -143,6 +143,12 @@ mrb_space_available(struct mrb *b) {
 
 
 size_t
+mrb_space(struct mrb *b) {
+    return b->size;
+}
+
+
+size_t
 mrb_space_used(struct mrb *b) {
     // 00111000
     //   r  w
@@ -156,6 +162,8 @@ mrb_space_used(struct mrb *b) {
 }
 
 
+/** Copy data from a caller location to the magic ring buffer. 
+ */
 size_t
 mrb_put(struct mrb *b, char *source, size_t size) {
     size_t amount = _MIN(size, mrb_space_available(b));
@@ -165,6 +173,8 @@ mrb_put(struct mrb *b, char *source, size_t size) {
 }
 
 
+/** Copy data from the magic ring buffer to a caller location.
+ */
 size_t
 mrb_get(struct mrb *b, char *dest, size_t size) {
     size_t amount = _MIN(size, mrb_space_used(b));
