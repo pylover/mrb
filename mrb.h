@@ -66,4 +66,8 @@ bool
 mrb_isfull(struct mrb *b);
 
 
+ssize_t
+mrb_readin(struct mrb *b, int fd, size_t size);
+
+
 #endif

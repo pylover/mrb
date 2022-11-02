@@ -234,3 +234,17 @@ mrb_getmin(struct mrb *b, char *dest, size_t minsize, size_t maxsize) {
     b->reader = (b->reader + amount) % b->size;
     return amount;
 }
+
+
+/** read(2) data into a VRB until EOF or full, or I/O would block.
+ */
+ssize_t
+mrb_readin(struct mrb *b, int fd, size_t size) {
+    size_t amount = _MIN(size, mrb_space_available(b));
+    ssize_t res = read(fd, b->buff + b->writer, amount);
+    if (res < 0) {
+        return res;
+    }
+    b->writer = (b->writer + res) % b->size;
+    return res;
+}

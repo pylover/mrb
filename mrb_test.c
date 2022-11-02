@@ -1,5 +1,6 @@
 #include "mrb.h"
 
+#include <clog.h>
 #include <cutest.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -150,7 +151,6 @@ test_mrb_put_getmin() {
     char in[size];
     char out[size];
     struct mrb *b = mrb_create(size);
-    int ufd = rand_open();
 
     /* Put 3 chars */
     eqint(3, mrb_put(b, "foo", 3));
@@ -161,35 +161,35 @@ test_mrb_put_getmin() {
     eqint(3, mrb_getmin(b, out, 3, 10));
 
     /* Teardown */
-    close(ufd);
     mrb_destroy(b);
 }
 
 
-// void
-// test_mrb_readin_writeout() {
-//     /* Setup */
-//     size_t size = getpagesize();
-//     char in[size];
-//     char out[size];
-//     struct mrb *b = mrb_create(size);
-//     int ufd = rand_open();
-// 
-//     /* Put 3 chars */
-//     eqint(3, mrb_put(b, "foo", 3));
-//     eqint(3, b->writer);
-// 
-//     /* Try to read at least 4 bytes */
-//     eqint(-1, mrb_getmin(b, out, 4, 10));
-//     eqint(3, mrb_getmin(b, out, 3, 10));
-// 
-//     /* Teardown */
-//     close(ufd);
-//     mrb_destroy(b);
-// }
+void
+test_mrb_readin_writeout() {
+    /* Setup */
+    size_t size = getpagesize();
+    char in[size];
+    char out[size];
+    struct mrb *b = mrb_create(size);
+    int ufd = rand_open();
+    int infd = fileno(tmpfile());
+
+    /* Provide some random data and put them */
+    read(ufd, in, size);
+    write(infd, in, size);
+    lseek(infd, 0, SEEK_SET);
+
+    eqint(size - 1, mrb_readin(b, infd, size));
+
+    /* Teardown */
+    close(ufd);
+    close(infd);
+    mrb_destroy(b);
+}
+
+
 /*
-vrb_read
-read(2) data into a VRB until EOF or full, or I/O would block.
 vrb_read_min
 read(2) a minimum amount of data into a VRB until EOF or full, or I/O would block.
 vrb_write
@@ -203,5 +203,6 @@ int main() {
     test_mrb_isfull_isempty();
     test_mrb_putall();
     test_mrb_put_getmin();
+    test_mrb_readin_writeout();
     return EXIT_SUCCESS;
 }
