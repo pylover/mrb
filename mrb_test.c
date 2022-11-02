@@ -124,11 +124,28 @@ test_mrb_is_full_is_empty() {
 }
 
 
+void
+test_mrb_put_all() {
+    /* Setup */
+    size_t size = getpagesize();
+    char in[size];
+    struct mrb *b = mrb_create(size);
+    int ufd = rand_open();
+
+    /* Provide some random data and put them */
+    read(ufd, in, size);
+    eqint(-1, mrb_put_all(b, in, size));
+    eqint(0, mrb_put_all(b, in, size - 1));
+
+    /* Teardown */
+    close(ufd);
+    mrb_destroy(b);
+}
+
+
 /*
 vrb_get_min
 Copy a minimum amount of data from the VRB only if it will fit.
-vrb_put_all
-Copy data to the VRB only if all of it will fit.
 vrb_read
 read(2) data into a VRB until EOF or full, or I/O would block.
 vrb_read_min
@@ -146,5 +163,6 @@ int main() {
     test_mrb_init_deinit();
     test_mrb_put_get();
     test_mrb_is_full_is_empty();
+    test_mrb_put_all();
     return EXIT_SUCCESS;
 }

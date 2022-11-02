@@ -42,6 +42,10 @@ size_t
 mrb_put(struct mrb *b, char *source, size_t size);
 
 
+int
+mrb_put_all(struct mrb *b, char *source, size_t size);
+
+
 size_t
 mrb_get(struct mrb *b, char *dest, size_t size);
 

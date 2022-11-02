@@ -195,6 +195,19 @@ mrb_put(struct mrb *b, char *source, size_t size) {
 }
 
 
+/** Copy data to the magic ring buffer only if all of it will fit.
+ */
+int
+mrb_put_all(struct mrb *b, char *source, size_t size) {
+    if (size > mrb_space_available(b)) {
+        return -1;
+    }
+    memcpy(b->buff + b->writer, source, size);
+    b->writer = (b->writer + size) % b->size;
+    return 0;
+}
+
+
 /** Copy data from the magic ring buffer to a caller location.
  */
 size_t
