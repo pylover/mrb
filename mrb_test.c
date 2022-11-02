@@ -143,19 +143,36 @@ test_mrb_put_all() {
 }
 
 
+void
+test_mrb_put_get_min() {
+    /* Setup */
+    size_t size = getpagesize();
+    char in[size];
+    char out[size];
+    struct mrb *b = mrb_create(size);
+    int ufd = rand_open();
+
+    /* Put 3 chars */
+    eqint(3, mrb_put(b, "foo", 3));
+    eqint(3, b->writer);
+
+    /* Try to read at least 4 bytes */
+    eqint(-1, mrb_get_min(b, out, 4, 10));
+    eqint(3, mrb_get_min(b, out, 3, 10));
+
+    /* Teardown */
+    close(ufd);
+    mrb_destroy(b);
+}
+
+
 /*
-vrb_get_min
-Copy a minimum amount of data from the VRB only if it will fit.
 vrb_read
 read(2) data into a VRB until EOF or full, or I/O would block.
 vrb_read_min
 read(2) a minimum amount of data into a VRB until EOF or full, or I/O would block.
 vrb_write
 write(2) data from a VRB until empty, or I/O would block.
-vrb_resize
-Change the size of a VRB while keeping any data in the buffer.
-vrb_move
-Move data from one VRB to another.
 */
 
 int main() {
@@ -164,5 +181,6 @@ int main() {
     test_mrb_put_get();
     test_mrb_is_full_is_empty();
     test_mrb_put_all();
+    test_mrb_put_get_min();
     return EXIT_SUCCESS;
 }

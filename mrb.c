@@ -217,3 +217,20 @@ mrb_get(struct mrb *b, char *dest, size_t size) {
     b->reader = (b->reader + amount) % b->size;
     return amount;
 }
+
+
+/** Get data from a magic ring buffer and copy it to the space provider by 
+  the caller only if the minimum specified amount can be copied. If less data 
+  than the minimum is available, then no data is copied.
+ */
+ssize_t
+mrb_get_min(struct mrb *b, char *dest, size_t minsize, size_t maxsize) {
+    size_t used = mrb_space_used(b);
+    if (minsize > used) {
+        return -1;
+    }
+    size_t amount = _MIN(maxsize, used);
+    memcpy(dest, b->buff + b->reader, amount);
+    b->reader = (b->reader + amount) % b->size;
+    return amount;
+}
