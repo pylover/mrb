@@ -179,7 +179,8 @@ test_mrb_readin_writeout() {
     read(ufd, in, size);
     write(infd, in, size);
     lseek(infd, 0, SEEK_SET);
-
+    
+    /* Read some data from fd into the buffer */
     eqint(size - 1, mrb_readin(b, infd, size));
 
     /* Teardown */
