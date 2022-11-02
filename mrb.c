@@ -171,7 +171,7 @@ mrb_space_used(struct mrb *b) {
 /** Determine if the buffer is currently empty.
  */
 bool
-mrb_is_empty(struct mrb *b) {
+mrb_isempty(struct mrb *b) {
     return b->reader == b->writer;
 }
 
@@ -179,7 +179,7 @@ mrb_is_empty(struct mrb *b) {
 /** Determine if the buffer is currently full.
  */
 bool
-mrb_is_full(struct mrb *b) {
+mrb_isfull(struct mrb *b) {
     return b->size == (mrb_space_used(b) + 1);
 }
 
@@ -198,7 +198,7 @@ mrb_put(struct mrb *b, char *source, size_t size) {
 /** Copy data to the magic ring buffer only if all of it will fit.
  */
 int
-mrb_put_all(struct mrb *b, char *source, size_t size) {
+mrb_putall(struct mrb *b, char *source, size_t size) {
     if (size > mrb_space_available(b)) {
         return -1;
     }
@@ -224,7 +224,7 @@ mrb_get(struct mrb *b, char *dest, size_t size) {
   than the minimum is available, then no data is copied.
  */
 ssize_t
-mrb_get_min(struct mrb *b, char *dest, size_t minsize, size_t maxsize) {
+mrb_getmin(struct mrb *b, char *dest, size_t minsize, size_t maxsize) {
     size_t used = mrb_space_used(b);
     if (minsize > used) {
         return -1;

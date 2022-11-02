@@ -25,7 +25,7 @@ test_mrb_create_close() {
     eqint(size, b->size);
     eqint(0, b->writer);
     eqint(0, b->reader);
-    istrue(mrb_is_empty(b));
+    istrue(mrb_isempty(b));
 
     memcpy(b->buff, "foo", 3);
     eqnstr("foo", b->buff, 3);
@@ -82,7 +82,7 @@ test_mrb_put_get() {
     eqint(1, b->writer);
     eqint(1, b->reader);
     eqint(4095, mrb_space_available(b));
-    istrue(mrb_is_empty(b));
+    istrue(mrb_isempty(b));
     eqnstr(in, out, size - 2);
 
     /* Teardown */
@@ -92,30 +92,30 @@ test_mrb_put_get() {
 
 
 void
-test_mrb_is_full_is_empty() {
+test_mrb_isfull_isempty() {
     /* Setup */
     size_t size = getpagesize();
     char in[size];
     char out[size];
     struct mrb *b = mrb_create(size);
     int ufd = rand_open();
-    istrue(mrb_is_empty(b));
+    istrue(mrb_isempty(b));
 
     /* Provide some random data and put them */
     read(ufd, in, size);
     eqint(size - 1, mrb_put(b, in, size));
     eqint(4095, b->writer);
     eqint(0, b->reader);
-    istrue(mrb_is_full(b));
+    istrue(mrb_isfull(b));
     eqint(4095, mrb_space_used(b));
 
     /* Get all available data */
     eqint(size - 1, mrb_get(b, out, size));
-    istrue(mrb_is_empty(b));
+    istrue(mrb_isempty(b));
     eqint(4095, b->writer);
     eqint(4095, b->reader);
     eqint(4095, mrb_space_available(b));
-    istrue(mrb_is_empty(b));
+    istrue(mrb_isempty(b));
     eqnstr(in, out, size - 1);
 
     /* Teardown */
@@ -125,7 +125,7 @@ test_mrb_is_full_is_empty() {
 
 
 void
-test_mrb_put_all() {
+test_mrb_putall() {
     /* Setup */
     size_t size = getpagesize();
     char in[size];
@@ -134,8 +134,8 @@ test_mrb_put_all() {
 
     /* Provide some random data and put them */
     read(ufd, in, size);
-    eqint(-1, mrb_put_all(b, in, size));
-    eqint(0, mrb_put_all(b, in, size - 1));
+    eqint(-1, mrb_putall(b, in, size));
+    eqint(0, mrb_putall(b, in, size - 1));
 
     /* Teardown */
     close(ufd);
@@ -144,7 +144,7 @@ test_mrb_put_all() {
 
 
 void
-test_mrb_put_get_min() {
+test_mrb_put_getmin() {
     /* Setup */
     size_t size = getpagesize();
     char in[size];
@@ -157,8 +157,8 @@ test_mrb_put_get_min() {
     eqint(3, b->writer);
 
     /* Try to read at least 4 bytes */
-    eqint(-1, mrb_get_min(b, out, 4, 10));
-    eqint(3, mrb_get_min(b, out, 3, 10));
+    eqint(-1, mrb_getmin(b, out, 4, 10));
+    eqint(3, mrb_getmin(b, out, 3, 10));
 
     /* Teardown */
     close(ufd);
@@ -166,6 +166,27 @@ test_mrb_put_get_min() {
 }
 
 
+// void
+// test_mrb_readin_writeout() {
+//     /* Setup */
+//     size_t size = getpagesize();
+//     char in[size];
+//     char out[size];
+//     struct mrb *b = mrb_create(size);
+//     int ufd = rand_open();
+// 
+//     /* Put 3 chars */
+//     eqint(3, mrb_put(b, "foo", 3));
+//     eqint(3, b->writer);
+// 
+//     /* Try to read at least 4 bytes */
+//     eqint(-1, mrb_getmin(b, out, 4, 10));
+//     eqint(3, mrb_getmin(b, out, 3, 10));
+// 
+//     /* Teardown */
+//     close(ufd);
+//     mrb_destroy(b);
+// }
 /*
 vrb_read
 read(2) data into a VRB until EOF or full, or I/O would block.
@@ -179,8 +200,8 @@ int main() {
     test_mrb_create_close();
     test_mrb_init_deinit();
     test_mrb_put_get();
-    test_mrb_is_full_is_empty();
-    test_mrb_put_all();
-    test_mrb_put_get_min();
+    test_mrb_isfull_isempty();
+    test_mrb_putall();
+    test_mrb_put_getmin();
     return EXIT_SUCCESS;
 }

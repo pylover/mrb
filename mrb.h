@@ -43,7 +43,7 @@ mrb_put(struct mrb *b, char *source, size_t size);
 
 
 int
-mrb_put_all(struct mrb *b, char *source, size_t size);
+mrb_putall(struct mrb *b, char *source, size_t size);
 
 
 size_t
@@ -51,7 +51,7 @@ mrb_get(struct mrb *b, char *dest, size_t size);
 
 
 ssize_t
-mrb_get_min(struct mrb *b, char *dest, size_t minsize, size_t maxsize);
+mrb_getmin(struct mrb *b, char *dest, size_t minsize, size_t maxsize);
 
 
 size_t
@@ -59,11 +59,11 @@ mrb_space(struct mrb *b);
 
 
 bool
-mrb_is_empty(struct mrb *b);
+mrb_isempty(struct mrb *b);
 
 
 bool
-mrb_is_full(struct mrb *b);
+mrb_isfull(struct mrb *b);
 
 
 #endif
