@@ -236,7 +236,8 @@ mrb_getmin(struct mrb *b, char *dest, size_t minsize, size_t maxsize) {
 }
 
 
-/** read(2) data into a VRB until EOF or full, or I/O would block.
+/** read(2) data into a magic ring buffer until EOF or full, or I/O would 
+  block.
  */
 ssize_t
 mrb_readin(struct mrb *b, int fd, size_t size) {
@@ -247,4 +248,18 @@ mrb_readin(struct mrb *b, int fd, size_t size) {
     }
     b->writer = (b->writer + res) % b->size;
     return res;
+}
+
+
+/** write(2) data from a magic ring buffer until empty, or I/O would block.
+ */
+ssize_t 
+mrb_writeout(struct mrb *b, int fd, size_t size) {
+    size_t amount = _MIN(size, mrb_space_used(b));
+    ssize_t res = write(fd, b->buff + b->reader, amount);
+    if (res < 0) {
+        return res;
+    }
+    b->reader = (b->reader + amount) % b->size;
+    return amount;
 }

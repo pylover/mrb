@@ -174,6 +174,7 @@ test_mrb_readin_writeout() {
     struct mrb *b = mrb_create(size);
     int ufd = rand_open();
     int infd = fileno(tmpfile());
+    int outfd = fileno(tmpfile());
 
     /* Provide some random data and put them */
     read(ufd, in, size);
@@ -182,6 +183,16 @@ test_mrb_readin_writeout() {
     
     /* Read some data from fd into the buffer */
     eqint(size - 1, mrb_readin(b, infd, size));
+    eqint(size - 1, mrb_space_used(b));
+
+    /* Write out */
+    eqint(size -1, mrb_writeout(b, outfd, size));
+    eqint(0, mrb_space_used(b));
+    
+    /* Compare */
+    lseek(outfd, 0, SEEK_SET);
+    read(outfd, out, size);
+    eqnstr(in, out, size);
 
     /* Teardown */
     close(ufd);
@@ -193,8 +204,6 @@ test_mrb_readin_writeout() {
 /*
 vrb_read_min
 read(2) a minimum amount of data into a VRB until EOF or full, or I/O would block.
-vrb_write
-write(2) data from a VRB until empty, or I/O would block.
 */
 
 int main() {
