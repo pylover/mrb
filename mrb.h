@@ -50,8 +50,16 @@ size_t
 mrb_get(struct mrb *b, char *dest, size_t size);
 
 
+size_t
+mrb_softget(struct mrb *b, char *dest, size_t size);
+
+
 ssize_t
 mrb_getmin(struct mrb *b, char *dest, size_t minsize, size_t maxsize);
+
+
+int
+mrb_skip(struct mrb *b, size_t size);
 
 
 size_t

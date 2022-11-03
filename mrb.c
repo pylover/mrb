@@ -86,7 +86,7 @@ mrb_create(size_t size) {
     /* Allocate memory for mrb structure. */
     b = malloc(sizeof(struct mrb));
     if (b == NULL) {
-        return b;
+        return NULL;
     }
 
     if (mrb_init(b, size)) {
@@ -219,6 +219,27 @@ mrb_get(struct mrb *b, char *dest, size_t size) {
 }
 
 
+/** Copy data from the magic ring buffer to a caller location without 
+  modifying the buffer state.
+ */
+size_t
+mrb_softget(struct mrb *b, char *dest, size_t size) {
+    size_t amount = _MIN(size, mrb_space_used(b));
+    memcpy(dest, b->buff + b->reader, amount);
+    return amount;
+}
+
+
+int
+mrb_skip(struct mrb *b, size_t size) {
+    if (mrb_space_used(b) < size) {
+        return -1;
+    }
+    b->reader = (b->reader + size) % b->size;
+    return 0;
+}
+
+
 /** Get data from a magic ring buffer and copy it to the space provider by 
   the caller only if the minimum specified amount can be copied. If less data 
   than the minimum is available, then no data is copied.
@@ -243,10 +264,9 @@ ssize_t
 mrb_readin(struct mrb *b, int fd, size_t size) {
     size_t amount = _MIN(size, mrb_space_available(b));
     ssize_t res = read(fd, b->buff + b->writer, amount);
-    if (res < 0) {
-        return res;
+    if (res > 0) {
+        b->writer = (b->writer + res) % b->size;
     }
-    b->writer = (b->writer + res) % b->size;
     return res;
 }
 
@@ -257,9 +277,8 @@ ssize_t
 mrb_writeout(struct mrb *b, int fd, size_t size) {
     size_t amount = _MIN(size, mrb_space_used(b));
     ssize_t res = write(fd, b->buff + b->reader, amount);
-    if (res < 0) {
-        return res;
+    if (res > 0) {
+        b->reader = (b->reader + res) % b->size;
     }
-    b->reader = (b->reader + amount) % b->size;
-    return amount;
+    return res;
 }
