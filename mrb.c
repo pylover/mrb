@@ -223,10 +223,10 @@ mrb_get(struct mrb *b, char *dest, size_t size) {
   modifying the buffer state.
  */
 size_t
-mrb_softget(struct mrb *b, char *dest, size_t size) {
-    size_t amount = _MIN(size, mrb_space_used(b));
-    memcpy(dest, b->buff + b->reader, amount);
-    return amount;
+mrb_softget(struct mrb *b, char *dest, size_t size, size_t offset) {
+    size_t amount = _MIN(size + offset, mrb_space_used(b));
+    memcpy(dest, b->buff + b->reader + offset, amount - offset);
+    return amount - offset;
 }
 
 

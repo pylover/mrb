@@ -51,7 +51,7 @@ mrb_get(struct mrb *b, char *dest, size_t size);
 
 
 size_t
-mrb_softget(struct mrb *b, char *dest, size_t size);
+mrb_softget(struct mrb *b, char *dest, size_t size, size_t offset);
 
 
 ssize_t
