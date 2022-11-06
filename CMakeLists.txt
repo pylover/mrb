@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.7)
 project(mrb 
     VERSION 1.1.0
     LANGUAGES C
@@ -41,8 +41,6 @@ list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 
 
 # Test Magic ringbuffer
-add_executable(mrb_test
-    $<TARGET_OBJECTS:mrb> 
-    mrb_test.c)
-target_link_libraries(mrb_test PUBLIC clog)
+add_executable(mrb_test mrb_test.c)
+target_link_libraries(mrb_test PUBLIC mrb clog)
 add_test(NAME mrb_test COMMAND mrb_test)
