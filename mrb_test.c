@@ -165,6 +165,23 @@ test_mrb_put_getmin() {
 }
 
 
+struct tfile {
+    FILE *file;
+    int fd;
+};
+
+
+static struct tfile
+tmpfile_open() {
+    struct tfile t = {
+        .file = tmpfile(),
+    };
+
+    t.fd = fileno(t.file);
+    return t;
+}
+
+
 void
 test_mrb_readin_writeout() {
     /* Setup */
@@ -173,30 +190,31 @@ test_mrb_readin_writeout() {
     char out[size];
     struct mrb *b = mrb_create(size);
     int ufd = rand_open();
-    int infd = fileno(tmpfile());
-    int outfd = fileno(tmpfile());
+    struct tfile infile = tmpfile_open();
+    struct tfile outfile = tmpfile_open();
 
     /* Provide some random data and put them */
     read(ufd, in, size);
-    write(infd, in, size);
-    lseek(infd, 0, SEEK_SET);
+    write(infile.fd, in, size);
+    lseek(infile.fd, 0, SEEK_SET);
     
     /* Read some data from fd into the buffer */
-    eqint(size - 1, mrb_readin(b, infd, size));
+    eqint(size - 1, mrb_readin(b, infile.fd, size));
     eqint(size - 1, mrb_space_used(b));
 
     /* Write out */
-    eqint(size -1, mrb_writeout(b, outfd, size));
+    eqint(size -1, mrb_writeout(b, outfile.fd, size));
     eqint(0, mrb_space_used(b));
     
     /* Compare */
-    lseek(outfd, 0, SEEK_SET);
-    read(outfd, out, size);
+    lseek(outfile.fd, 0, SEEK_SET);
+    read(outfile.fd, out, size);
     eqnstr(in, out, size);
 
     /* Teardown */
     close(ufd);
-    close(infd);
+    fclose(infile.file);
+    fclose(outfile.file);
     mrb_destroy(b);
 }
 

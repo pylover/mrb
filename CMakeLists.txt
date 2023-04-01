@@ -8,7 +8,7 @@ project(mrb
 configure_file(manifest.h.in manifest.h)
 
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_GNU_SOURCE=1")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -D_GNU_SOURCE=1")
 
 
 include_directories(
@@ -40,7 +40,27 @@ include(CTest)
 list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 
 
+# Valgrind, Profiling
+add_custom_target(profile 
+    DEPENDS 
+    profile_mrb_test
+)
+set(VALGRIND_FLAGS
+    -s
+    --tool=memcheck 
+    --leak-check=yes 
+    --show-reachable=yes 
+    --num-callers=20 
+    --track-fds=yes 
+)
+
+
 # Test Magic ringbuffer
 add_executable(mrb_test mrb_test.c)
 target_link_libraries(mrb_test PUBLIC mrb clog)
 add_test(NAME mrb_test COMMAND mrb_test)
+add_custom_target(profile_mrb_test
+    COMMAND "valgrind" 
+    ${VALGRIND_FLAGS}
+    $<TARGET_FILE:mrb_test>
+)
