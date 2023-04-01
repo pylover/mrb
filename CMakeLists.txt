@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.7)
 project(mrb 
-    VERSION 1.1.0
+    VERSION 1.1.1
     LANGUAGES C
 )
 

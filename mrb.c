@@ -15,9 +15,10 @@ mrb_init(struct mrb *b, size_t size) {
     /* Calculate the real size (multiple of pagesize). */
     if (size % pagesize) {
         ERROR(
-            "Invalid size: %lu, size should be multiple of pagesize, see "
-            "getpagesize(2).", 
-            size
+            "Invalid size: %lu, size should be multiple of pagesize (%lu), "
+            "see getpagesize(2).", 
+            size,
+            pagesize
         );
         return -1;
     }
