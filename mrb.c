@@ -28,8 +28,8 @@ mrb_init(struct mrb *b, size_t size) {
     b->reader = 0;
 
     /* Create a temporary file with requested size as the backend for mmap. */
-    FILE *f = tmpfile();
-    const int fd = fileno(f);
+    FILE *file = tmpfile();
+    const int fd = fileno(file);
     ftruncate(fd, b->size);
   
     /* Allocate the underlying backed buffer. */
@@ -42,7 +42,8 @@ mrb_init(struct mrb *b, size_t size) {
             0
         );
     if (b->buff == MAP_FAILED) {
-        fclose(f);
+        close(fd);
+        fclose(file);
         return -1;
     }
 
@@ -57,7 +58,8 @@ mrb_init(struct mrb *b, size_t size) {
 
     if (first == MAP_FAILED) {
         munmap(b->buff, b->size * 2);
-        fclose(f);
+        close(fd);
+        fclose(file);
         return -1;
     }
 
@@ -72,11 +74,13 @@ mrb_init(struct mrb *b, size_t size) {
  
     if (second == MAP_FAILED) {
         munmap(b->buff, b->size * 2);
-        fclose(f);
+        close(fd);
+        fclose(file);
         return -1;
     }
 
-    fclose(f);
+    close(fd);
+    fclose(file);
     return 0;
 }
 
