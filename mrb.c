@@ -8,6 +8,14 @@
 #define _MIN(a, b) ((a) < (b)) ? (a) : (b)
 
 
+struct mrb {
+    unsigned char *buff;
+    size_t size;
+    int writer;
+    int reader;
+};
+
+
 int
 mrb_init(struct mrb *b, size_t size) {
     int pagesize = getpagesize();

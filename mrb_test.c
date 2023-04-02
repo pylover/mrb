@@ -16,6 +16,14 @@ rand_open() {
 }
 
 
+struct mrb {
+    unsigned char *buff;
+    size_t size;
+    int writer;
+    int reader;
+};
+
+
 void
 test_mrb_create_close() {
     size_t size = getpagesize();

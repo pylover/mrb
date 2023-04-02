@@ -6,12 +6,7 @@
 #include <stdbool.h>
 
 
-struct mrb {
-    unsigned char *buff;
-    size_t size;
-    int writer;
-    int reader;
-};
+struct mrb;
 
 
 int
