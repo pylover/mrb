@@ -3,6 +3,7 @@
 #include <clog.h>
 #include <cutest.h>
 #include <unistd.h>
+#include <errno.h>
 #include <fcntl.h>
 
 
@@ -47,6 +48,7 @@ test_mrb_init_deinit() {
     size_t size = getpagesize();
     struct mrb b;
     eqint(0, mrb_init(&b, size));
+    eqint(0, errno);
 
     isnotnull(b.buff);
     eqint(size, b.size);

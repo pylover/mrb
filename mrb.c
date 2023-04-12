@@ -1,7 +1,9 @@
 #include "mrb.h"
 
 #include <clog.h>
+
 #include <unistd.h>
+#include <errno.h>
 #include <sys/mman.h>
 
 
@@ -87,7 +89,6 @@ mrb_init(struct mrb *b, size_t size) {
         return -1;
     }
 
-    close(fd);
     fclose(file);
     return 0;
 }
