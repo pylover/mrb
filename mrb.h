@@ -26,11 +26,11 @@ mrb_destroy(struct mrb *b);
 
 
 size_t
-mrb_space_available(struct mrb *b);
+mrb_available(struct mrb *b);
 
 
 size_t
-mrb_space_used(struct mrb *b);
+mrb_used(struct mrb *b);
 
 
 size_t
@@ -58,7 +58,7 @@ mrb_skip(struct mrb *b, size_t size);
 
 
 size_t
-mrb_space(struct mrb *b);
+mrb_size(struct mrb *b);
 
 
 bool

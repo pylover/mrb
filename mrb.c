@@ -146,7 +146,7 @@ mrb_destroy(struct mrb *b) {
 /** Obtain the total buffer capacity of a VRB.
  */
 size_t
-mrb_space(struct mrb *b) {
+mrb_size(struct mrb *b) {
     return b->size;
 }
 
@@ -154,7 +154,7 @@ mrb_space(struct mrb *b) {
 /** Obtain the length of empty space in the buffer.
  */
 size_t
-mrb_space_available(struct mrb *b) {
+mrb_available(struct mrb *b) {
     // 11000111
     //   w  r
     if (b->writer < b->reader) {
@@ -170,7 +170,7 @@ mrb_space_available(struct mrb *b) {
 /** Obtain the length of data in the buffer.
  */
 size_t
-mrb_space_used(struct mrb *b) {
+mrb_used(struct mrb *b) {
     // 00111000
     //   r  w
     if (b->writer >= b->reader) {
@@ -195,7 +195,7 @@ mrb_isempty(struct mrb *b) {
  */
 bool
 mrb_isfull(struct mrb *b) {
-    return b->size == (mrb_space_used(b) + 1);
+    return b->size == (mrb_used(b) + 1);
 }
 
 
@@ -203,7 +203,7 @@ mrb_isfull(struct mrb *b) {
  */
 size_t
 mrb_put(struct mrb *b, char *source, size_t size) {
-    size_t amount = _MIN(size, mrb_space_available(b));
+    size_t amount = _MIN(size, mrb_available(b));
     memcpy(b->buff + b->writer, source, amount);
     b->writer = (b->writer + amount) % b->size;
     return amount;
@@ -214,7 +214,7 @@ mrb_put(struct mrb *b, char *source, size_t size) {
  */
 int
 mrb_putall(struct mrb *b, char *source, size_t size) {
-    if (size > mrb_space_available(b)) {
+    if (size > mrb_available(b)) {
         return -1;
     }
     memcpy(b->buff + b->writer, source, size);
@@ -227,7 +227,7 @@ mrb_putall(struct mrb *b, char *source, size_t size) {
  */
 size_t
 mrb_get(struct mrb *b, char *dest, size_t size) {
-    size_t amount = _MIN(size, mrb_space_used(b));
+    size_t amount = _MIN(size, mrb_used(b));
     memcpy(dest, b->buff + b->reader, amount);
     b->reader = (b->reader + amount) % b->size;
     return amount;
@@ -239,7 +239,7 @@ mrb_get(struct mrb *b, char *dest, size_t size) {
  */
 size_t
 mrb_softget(struct mrb *b, char *dest, size_t size, size_t offset) {
-    size_t amount = _MIN(size + offset, mrb_space_used(b));
+    size_t amount = _MIN(size + offset, mrb_used(b));
     memcpy(dest, b->buff + b->reader + offset, amount - offset);
     return amount - offset;
 }
@@ -247,7 +247,7 @@ mrb_softget(struct mrb *b, char *dest, size_t size, size_t offset) {
 
 int
 mrb_skip(struct mrb *b, size_t size) {
-    if (mrb_space_used(b) < size) {
+    if (mrb_used(b) < size) {
         return -1;
     }
     b->reader = (b->reader + size) % b->size;
@@ -261,7 +261,7 @@ mrb_skip(struct mrb *b, size_t size) {
  */
 ssize_t
 mrb_getmin(struct mrb *b, char *dest, size_t minsize, size_t maxsize) {
-    size_t used = mrb_space_used(b);
+    size_t used = mrb_used(b);
     if (minsize > used) {
         return -1;
     }
@@ -277,7 +277,7 @@ mrb_getmin(struct mrb *b, char *dest, size_t minsize, size_t maxsize) {
  */
 ssize_t
 mrb_readin(struct mrb *b, int fd, size_t size) {
-    size_t amount = _MIN(size, mrb_space_available(b));
+    size_t amount = _MIN(size, mrb_available(b));
     ssize_t res = read(fd, b->buff + b->writer, amount);
     if (res > 0) {
         b->writer = (b->writer + res) % b->size;
@@ -290,7 +290,7 @@ mrb_readin(struct mrb *b, int fd, size_t size) {
  */
 ssize_t 
 mrb_writeout(struct mrb *b, int fd, size_t size) {
-    size_t amount = _MIN(size, mrb_space_used(b));
+    size_t amount = _MIN(size, mrb_used(b));
     ssize_t res = write(fd, b->buff + b->reader, amount);
     if (res > 0) {
         b->reader = (b->reader + res) % b->size;

@@ -73,8 +73,8 @@ test_mrb_put_get() {
     /* Put 3 chars */
     eqint(3, mrb_put(b, "foo", 3));
     eqint(3, b->writer);
-    eqint(3, mrb_space_used(b));
-    eqint(size - 4, mrb_space_available(b));
+    eqint(3, mrb_used(b));
+    eqint(size - 4, mrb_available(b));
 
     /* Ger 3 chars from buffer */ 
     eqint(3, mrb_get(b, out, 3));
@@ -92,7 +92,7 @@ test_mrb_put_get() {
     eqint(size - 2, mrb_get(b, out, size - 2));
     eqint(1, b->writer);
     eqint(1, b->reader);
-    eqint(4095, mrb_space_available(b));
+    eqint(4095, mrb_available(b));
     istrue(mrb_isempty(b));
     eqnstr(in, out, size - 2);
 
@@ -118,14 +118,14 @@ test_mrb_isfull_isempty() {
     eqint(4095, b->writer);
     eqint(0, b->reader);
     istrue(mrb_isfull(b));
-    eqint(4095, mrb_space_used(b));
+    eqint(4095, mrb_used(b));
 
     /* Get all available data */
     eqint(size - 1, mrb_get(b, out, size));
     istrue(mrb_isempty(b));
     eqint(4095, b->writer);
     eqint(4095, b->reader);
-    eqint(4095, mrb_space_available(b));
+    eqint(4095, mrb_available(b));
     istrue(mrb_isempty(b));
     eqnstr(in, out, size - 1);
 
@@ -210,11 +210,11 @@ test_mrb_readin_writeout() {
     
     /* Read some data from fd into the buffer */
     eqint(size - 1, mrb_readin(b, infile.fd, size));
-    eqint(size - 1, mrb_space_used(b));
+    eqint(size - 1, mrb_used(b));
 
     /* Write out */
     eqint(size -1, mrb_writeout(b, outfile.fd, size));
-    eqint(0, mrb_space_used(b));
+    eqint(0, mrb_used(b));
     
     /* Compare */
     lseek(outfile.fd, 0, SEEK_SET);
