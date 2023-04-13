@@ -28,7 +28,7 @@ struct mrb {
 void
 test_mrb_create_close() {
     size_t size = getpagesize();
-    struct mrb *b = mrb_create(size);
+    mrb_t b = mrb_create(size);
 
     isnotnull(b);
     isnotnull(b->buff);
@@ -67,7 +67,7 @@ test_mrb_put_get() {
     size_t size = getpagesize();
     char in[size];
     char out[size];
-    struct mrb *b = mrb_create(size);
+    mrb_t b = mrb_create(size);
     int ufd = rand_open();
 
     /* Put 3 chars */
@@ -108,7 +108,7 @@ test_mrb_isfull_isempty() {
     size_t size = getpagesize();
     char in[size];
     char out[size];
-    struct mrb *b = mrb_create(size);
+    mrb_t b = mrb_create(size);
     int ufd = rand_open();
     istrue(mrb_isempty(b));
 
@@ -140,7 +140,7 @@ test_mrb_putall() {
     /* Setup */
     size_t size = getpagesize();
     char in[size];
-    struct mrb *b = mrb_create(size);
+    mrb_t b = mrb_create(size);
     int ufd = rand_open();
 
     /* Provide some random data and put them */
@@ -160,7 +160,7 @@ test_mrb_put_getmin() {
     size_t size = getpagesize();
     char in[size];
     char out[size];
-    struct mrb *b = mrb_create(size);
+    mrb_t b = mrb_create(size);
 
     /* Put 3 chars */
     eqint(3, mrb_put(b, "foo", 3));
@@ -198,7 +198,7 @@ test_mrb_readin_writeout() {
     size_t size = getpagesize();
     char in[size];
     char out[size];
-    struct mrb *b = mrb_create(size);
+    mrb_t b = mrb_create(size);
     int ufd = rand_open();
     struct tfile infile = tmpfile_open();
     struct tfile outfile = tmpfile_open();
@@ -228,11 +228,6 @@ test_mrb_readin_writeout() {
     mrb_destroy(b);
 }
 
-
-/*
-vrb_read_min
-read(2) a minimum amount of data into a VRB until EOF or full, or I/O would block.
-*/
 
 int main() {
     test_mrb_create_close();

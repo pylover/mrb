@@ -6,7 +6,7 @@
 #include <stdbool.h>
 
 
-struct mrb;
+typedef struct mrb *mrb_t;
 
 
 int
