@@ -77,4 +77,8 @@ ssize_t
 mrb_writeout(struct mrb *b, int fd, size_t size);
 
 
+int
+search_buffer(struct mrb *b, char *search_string, int *start_index);
+
+
 #endif

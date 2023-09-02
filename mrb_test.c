@@ -1,10 +1,11 @@
-#include "mrb.h"
-
-#include <clog.h>
-#include <cutest.h>
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
+
+#include <clog.h>
+#include <cutest.h>
+
+#include "mrb.h"
 
 
 static int
@@ -229,6 +230,31 @@ test_mrb_readin_writeout() {
 }
 
 
+int
+test_mrb_search() {
+    /* Setup */
+    mrb_t b = mrb_create(getpagesize());
+    char *key = "u";
+    int startindex = 0;
+ 
+    /* Compare */
+    eqint(3, mrb_put(b, "foo", 3));
+    eqint(-1, mrb_search(b, key, &startindex));
+    eqint(3, startindex);
+
+    eqint(6, mrb_put(b, "barbaz", 6));
+    eqint(-1, mrb_search(b, key, &startindex));
+    eqint(9, startindex);
+
+    eqint(3, mrb_put(b, "qux", 3));
+    eqint(10, mrb_search(b, key, &startindex));
+    eqint(11, startindex);
+
+    /* Teardown */
+    mrb_destroy(b);
+}
+
+
 int main() {
     test_mrb_create_close();
     test_mrb_init_deinit();
@@ -237,5 +263,6 @@ int main() {
     test_mrb_putall();
     test_mrb_put_getmin();
     test_mrb_readin_writeout();
+    // test_mrb_search();
     return EXIT_SUCCESS;
 }

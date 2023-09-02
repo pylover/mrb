@@ -1,10 +1,10 @@
-#include "mrb.h"
-
-#include <clog.h>
-
 #include <unistd.h>
 #include <errno.h>
 #include <sys/mman.h>
+
+#include <clog.h>
+
+#include "mrb.h"
 
 
 #define _MIN(a, b) ((a) < (b)) ? (a) : (b)
@@ -296,4 +296,25 @@ mrb_writeout(struct mrb *b, int fd, size_t size) {
         b->reader = (b->reader + res) % b->size;
     }
     return res;
+}
+
+
+int
+mrb_search(struct mrb *b, char *key, int *start_index) {
+    if (*start_index >= mrb_size(b)) {
+        return -1;
+    }
+
+    size_t buffer_size = mrb_used(b);
+
+    void *result = memmem(b->buff + *start_index, buffer_size - *start_index,
+            key, strlen(key));
+    if (result == NULL) {
+        *start_index = buffer_size;
+        return -1;
+    } else {
+        int index = (unsigned char *)result - b->buff;
+        *start_index = index + strlen(key);
+        return index;
+    }
 }
