@@ -77,7 +77,7 @@ test_mrb_put_get() {
     eqint(3, mrb_used(b));
     eqint(size - 4, mrb_available(b));
 
-    /* Ger 3 chars from buffer */ 
+    /* Ger 3 chars from buffer */
     eqint(3, mrb_get(b, out, 3));
     eqnstr("foo", out, 3);
     eqint(3, b->writer);
@@ -208,7 +208,7 @@ test_mrb_readin_writeout() {
     read(ufd, in, size);
     write(infile.fd, in, size);
     lseek(infile.fd, 0, SEEK_SET);
-    
+
     /* Read some data from fd into the buffer */
     eqint(size - 1, mrb_readin(b, infile.fd, size));
     eqint(size - 1, mrb_used(b));
@@ -216,7 +216,7 @@ test_mrb_readin_writeout() {
     /* Write out */
     eqint(size -1, mrb_writeout(b, outfile.fd, size));
     eqint(0, mrb_used(b));
-    
+
     /* Compare */
     lseek(outfile.fd, 0, SEEK_SET);
     read(outfile.fd, out, size);
@@ -236,7 +236,7 @@ test_mrb_search() {
     mrb_t b = mrb_create(getpagesize());
     char *key = "u";
     int startindex = 0;
- 
+
     /* Compare */
     eqint(3, mrb_put(b, "foo", 3));
     eqint(-1, mrb_search(b, key, &startindex));

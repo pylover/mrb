@@ -1,5 +1,5 @@
-#ifndef MRB_H
-#define MRB_H
+#ifndef MRB_H_
+#define MRB_H_
 
 
 #include <stdlib.h>
@@ -73,7 +73,7 @@ ssize_t
 mrb_readin(struct mrb *b, int fd, size_t size);
 
 
-ssize_t 
+ssize_t
 mrb_writeout(struct mrb *b, int fd, size_t size);
 
 
@@ -81,4 +81,4 @@ int
 search_buffer(struct mrb *b, char *search_string, int *start_index);
 
 
-#endif
+#endif  // MRB_H_

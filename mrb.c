@@ -21,15 +21,14 @@ struct mrb {
 int
 mrb_init(struct mrb *b, size_t size) {
     int pagesize = getpagesize();
-   
+
     /* Calculate the real size (multiple of pagesize). */
     if (size % pagesize) {
         ERROR(
             "Invalid size: %lu, size should be multiple of pagesize (%lu), "
-            "see getpagesize(2).", 
+            "see getpagesize(2).",
             size,
-            pagesize
-        );
+            pagesize);
         return -1;
     }
 
@@ -41,16 +40,15 @@ mrb_init(struct mrb *b, size_t size) {
     FILE *file = tmpfile();
     const int fd = fileno(file);
     ftruncate(fd, b->size);
-  
+
     /* Allocate the underlying backed buffer. */
     b->buff = mmap(
-            NULL, 
-            b->size * 2,
-            PROT_NONE, 
-            MAP_ANONYMOUS | MAP_PRIVATE,
-            -1, 
-            0
-        );
+        NULL,
+        b->size * 2,
+        PROT_NONE,
+        MAP_ANONYMOUS | MAP_PRIVATE,
+        -1,
+        0);
     if (b->buff == MAP_FAILED) {
         close(fd);
         fclose(file);
@@ -58,13 +56,12 @@ mrb_init(struct mrb *b, size_t size) {
     }
 
     unsigned char *first = mmap(
-            b->buff, 
-            b->size, 
-            PROT_READ | PROT_WRITE,
-            MAP_FIXED | MAP_SHARED,
-            fd,
-            0
-        );
+        b->buff,
+        b->size,
+        PROT_READ | PROT_WRITE,
+        MAP_FIXED | MAP_SHARED,
+        fd,
+        0);
 
     if (first == MAP_FAILED) {
         munmap(b->buff, b->size * 2);
@@ -74,14 +71,13 @@ mrb_init(struct mrb *b, size_t size) {
     }
 
     unsigned char *second = mmap(
-            b->buff + b->size, 
-            b->size, 
-            PROT_READ | PROT_WRITE,
-            MAP_FIXED | MAP_SHARED,
-            fd,
-            0
-        );
- 
+        b->buff + b->size,
+        b->size,
+        PROT_READ | PROT_WRITE,
+        MAP_FIXED | MAP_SHARED,
+        fd,
+        0);
+
     if (second == MAP_FAILED) {
         munmap(b->buff, b->size * 2);
         close(fd);
@@ -116,7 +112,7 @@ mrb_create(size_t size) {
 int
 mrb_deinit(struct mrb *b) {
     /* unmap second part */
-    if (munmap(b->buff + b->size, b->size)) { 
+    if (munmap(b->buff + b->size, b->size)) {
         return -1;
     }
 
@@ -160,7 +156,7 @@ mrb_available(struct mrb *b) {
     if (b->writer < b->reader) {
         return b->reader - b->writer - 1;
     }
-    
+
     // 00111100
     //   r   w
     return b->size - (b->writer - b->reader) - 1;
@@ -176,7 +172,7 @@ mrb_used(struct mrb *b) {
     if (b->writer >= b->reader) {
         return b->writer - b->reader;
     }
-    
+
     // 11000111
     //   w  r
     return b->size - (b->reader - b->writer);
@@ -288,7 +284,7 @@ mrb_readin(struct mrb *b, int fd, size_t size) {
 
 /** write(2) data from a magic ring buffer until empty, or I/O would block.
  */
-ssize_t 
+ssize_t
 mrb_writeout(struct mrb *b, int fd, size_t size) {
     size_t amount = _MIN(size, mrb_used(b));
     ssize_t res = write(fd, b->buff + b->reader, amount);
@@ -306,7 +302,6 @@ mrb_search(struct mrb *b, char *key, int *start_index) {
     }
 
     size_t buffer_size = mrb_used(b);
-
     void *result = memmem(b->buff + *start_index, buffer_size - *start_index,
             key, strlen(key));
     if (result == NULL) {
