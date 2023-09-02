@@ -230,7 +230,7 @@ test_mrb_readin_writeout() {
 }
 
 
-int
+void
 test_mrb_search() {
     /* Setup */
     mrb_t b = mrb_create(getpagesize());
