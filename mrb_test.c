@@ -263,6 +263,6 @@ int main() {
     test_mrb_putall();
     test_mrb_put_getmin();
     test_mrb_readin_writeout();
-    // test_mrb_search();
+    test_mrb_search();
     return EXIT_SUCCESS;
 }
