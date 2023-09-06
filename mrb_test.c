@@ -76,7 +76,7 @@ test_mrb_put_get() {
     eqint(3, mrb_used(b));
     eqint(size - 4, mrb_available(b));
 
-    /* Ger 3 chars from buffer */ 
+    /* Ger 3 chars from buffer */
     eqint(3, mrb_get(b, out, 3));
     eqnstr("foo", out, 3);
     eqint(3, b->writer);
@@ -207,7 +207,7 @@ test_mrb_readin_writeout() {
     read(ufd, in, size);
     write(infile.fd, in, size);
     lseek(infile.fd, 0, SEEK_SET);
-    
+
     /* Read some data from fd into the buffer */
     eqint(size - 1, mrb_readin(b, infile.fd, size));
     eqint(size - 1, mrb_used(b));
@@ -215,7 +215,7 @@ test_mrb_readin_writeout() {
     /* Write out */
     eqint(size -1, mrb_writeout(b, outfile.fd, size));
     eqint(0, mrb_used(b));
-    
+
     /* Compare */
     lseek(outfile.fd, 0, SEEK_SET);
     read(outfile.fd, out, size);
@@ -229,6 +229,34 @@ test_mrb_readin_writeout() {
 }
 
 
+void
+test_mrb_search() {
+    /* Setup */
+    size_t size = getpagesize();
+    char in[size];
+    char out[size];
+    mrb_t b = mrb_create(size);
+
+    mrb_put(b, "foobarbazqux", 12);
+
+    eqint(0, mrb_search(b, "foo", 3, 0, -1));
+    eqint(3, mrb_search(b, "bar", 3, 0, -1));
+    eqint(6, mrb_search(b, "baz", 3, 0, -1));
+    eqint(9, mrb_search(b, "qux", 3, 0, -1));
+    eqint(10, mrb_search(b, "ux", 2, 0, -1));
+    eqint(11, mrb_search(b, "x", 1, 0, -1));
+
+    eqint(3, mrb_search(b, "bar", 3, 3, -1));
+    eqint(3, mrb_search(b, "bar", 3, 3, 3));
+    eqint(-1, mrb_search(b, "bar", 3, 3, 2));
+
+    eqint(0, mrb_search(b, "foobarbazqux", 12, 0, -1));
+    eqint(-1, mrb_search(b, "bar", 0, 0, -1));
+    eqint(-1, mrb_search(b, NULL, 3, 0, -1));
+    eqint(-1, mrb_search(b, "rab", 3, 0, -1));
+}
+
+
 int main() {
     test_mrb_create_close();
     test_mrb_init_deinit();
@@ -237,5 +265,6 @@ int main() {
     test_mrb_putall();
     test_mrb_put_getmin();
     test_mrb_readin_writeout();
+    test_mrb_search();
     return EXIT_SUCCESS;
 }

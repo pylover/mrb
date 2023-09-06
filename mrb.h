@@ -73,8 +73,13 @@ ssize_t
 mrb_readin(struct mrb *b, int fd, size_t size);
 
 
-ssize_t 
+ssize_t
 mrb_writeout(struct mrb *b, int fd, size_t size);
+
+
+ssize_t
+mrb_search(struct mrb *b, const char *needle, size_t needlelen, size_t start,
+        ssize_t limit);
 
 
 #endif

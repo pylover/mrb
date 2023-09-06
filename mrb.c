@@ -7,7 +7,9 @@
 #include <sys/mman.h>
 
 
-#define _MIN(a, b) ((a) < (b)) ? (a) : (b)
+#ifndef MIN
+#define MIN(a, b) ((a) < (b)) ? (a) : (b)
+#endif
 
 
 struct mrb {
@@ -21,12 +23,12 @@ struct mrb {
 int
 mrb_init(struct mrb *b, size_t size) {
     int pagesize = getpagesize();
-   
+
     /* Calculate the real size (multiple of pagesize). */
     if (size % pagesize) {
         ERROR(
             "Invalid size: %lu, size should be multiple of pagesize (%lu), "
-            "see getpagesize(2).", 
+            "see getpagesize(2).",
             size,
             pagesize
         );
@@ -41,14 +43,14 @@ mrb_init(struct mrb *b, size_t size) {
     FILE *file = tmpfile();
     const int fd = fileno(file);
     ftruncate(fd, b->size);
-  
+
     /* Allocate the underlying backed buffer. */
     b->buff = mmap(
-            NULL, 
+            NULL,
             b->size * 2,
-            PROT_NONE, 
+            PROT_NONE,
             MAP_ANONYMOUS | MAP_PRIVATE,
-            -1, 
+            -1,
             0
         );
     if (b->buff == MAP_FAILED) {
@@ -58,8 +60,8 @@ mrb_init(struct mrb *b, size_t size) {
     }
 
     unsigned char *first = mmap(
-            b->buff, 
-            b->size, 
+            b->buff,
+            b->size,
             PROT_READ | PROT_WRITE,
             MAP_FIXED | MAP_SHARED,
             fd,
@@ -74,14 +76,14 @@ mrb_init(struct mrb *b, size_t size) {
     }
 
     unsigned char *second = mmap(
-            b->buff + b->size, 
-            b->size, 
+            b->buff + b->size,
+            b->size,
             PROT_READ | PROT_WRITE,
             MAP_FIXED | MAP_SHARED,
             fd,
             0
         );
- 
+
     if (second == MAP_FAILED) {
         munmap(b->buff, b->size * 2);
         close(fd);
@@ -116,7 +118,7 @@ mrb_create(size_t size) {
 int
 mrb_deinit(struct mrb *b) {
     /* unmap second part */
-    if (munmap(b->buff + b->size, b->size)) { 
+    if (munmap(b->buff + b->size, b->size)) {
         return -1;
     }
 
@@ -160,7 +162,7 @@ mrb_available(struct mrb *b) {
     if (b->writer < b->reader) {
         return b->reader - b->writer - 1;
     }
-    
+
     // 00111100
     //   r   w
     return b->size - (b->writer - b->reader) - 1;
@@ -176,7 +178,7 @@ mrb_used(struct mrb *b) {
     if (b->writer >= b->reader) {
         return b->writer - b->reader;
     }
-    
+
     // 11000111
     //   w  r
     return b->size - (b->reader - b->writer);
@@ -199,11 +201,11 @@ mrb_isfull(struct mrb *b) {
 }
 
 
-/** Copy data from a caller location to the magic ring buffer. 
+/** Copy data from a caller location to the magic ring buffer.
  */
 size_t
 mrb_put(struct mrb *b, char *source, size_t size) {
-    size_t amount = _MIN(size, mrb_available(b));
+    size_t amount = MIN(size, mrb_available(b));
     memcpy(b->buff + b->writer, source, amount);
     b->writer = (b->writer + amount) % b->size;
     return amount;
@@ -227,19 +229,19 @@ mrb_putall(struct mrb *b, char *source, size_t size) {
  */
 size_t
 mrb_get(struct mrb *b, char *dest, size_t size) {
-    size_t amount = _MIN(size, mrb_used(b));
+    size_t amount = MIN(size, mrb_used(b));
     memcpy(dest, b->buff + b->reader, amount);
     b->reader = (b->reader + amount) % b->size;
     return amount;
 }
 
 
-/** Copy data from the magic ring buffer to a caller location without 
+/** Copy data from the magic ring buffer to a caller location without
   modifying the buffer state.
  */
 size_t
 mrb_softget(struct mrb *b, char *dest, size_t size, size_t offset) {
-    size_t amount = _MIN(size + offset, mrb_used(b));
+    size_t amount = MIN(size + offset, mrb_used(b));
     memcpy(dest, b->buff + b->reader + offset, amount - offset);
     return amount - offset;
 }
@@ -255,8 +257,8 @@ mrb_skip(struct mrb *b, size_t size) {
 }
 
 
-/** Get data from a magic ring buffer and copy it to the space provider by 
-  the caller only if the minimum specified amount can be copied. If less data 
+/** Get data from a magic ring buffer and copy it to the space provider by
+  the caller only if the minimum specified amount can be copied. If less data
   than the minimum is available, then no data is copied.
  */
 ssize_t
@@ -265,19 +267,19 @@ mrb_getmin(struct mrb *b, char *dest, size_t minsize, size_t maxsize) {
     if (minsize > used) {
         return -1;
     }
-    size_t amount = _MIN(maxsize, used);
+    size_t amount = MIN(maxsize, used);
     memcpy(dest, b->buff + b->reader, amount);
     b->reader = (b->reader + amount) % b->size;
     return amount;
 }
 
 
-/** read(2) data into a magic ring buffer until EOF or full, or I/O would 
+/** read(2) data into a magic ring buffer until EOF or full, or I/O would
   block.
  */
 ssize_t
 mrb_readin(struct mrb *b, int fd, size_t size) {
-    size_t amount = _MIN(size, mrb_available(b));
+    size_t amount = MIN(size, mrb_available(b));
     ssize_t res = read(fd, b->buff + b->writer, amount);
     if (res > 0) {
         b->writer = (b->writer + res) % b->size;
@@ -288,12 +290,48 @@ mrb_readin(struct mrb *b, int fd, size_t size) {
 
 /** write(2) data from a magic ring buffer until empty, or I/O would block.
  */
-ssize_t 
+ssize_t
 mrb_writeout(struct mrb *b, int fd, size_t size) {
-    size_t amount = _MIN(size, mrb_used(b));
+    size_t amount = MIN(size, mrb_used(b));
     ssize_t res = write(fd, b->buff + b->reader, amount);
     if (res > 0) {
         b->reader = (b->reader + res) % b->size;
     }
     return res;
+}
+
+
+/** Search for the specified string within buffer
+  */
+ssize_t
+mrb_search(struct mrb *b, const char *needle, size_t needlelen, size_t start,
+        ssize_t limit) {
+
+    size_t used;
+    unsigned char *s;
+    unsigned char *found;
+    if ((needle == NULL) || (needlelen == 0)) {
+        return -1;
+    }
+
+    used = mrb_used(b);
+    if (limit == -1) {
+        limit = used;
+    }
+    else {
+        limit = MIN(limit, used);
+    }
+
+    s = b->buff + b->reader;
+    if (start >= used) {
+        return -1;
+    }
+    s += start;
+
+    found = memmem(s, limit, needle, needlelen);
+    if (found == NULL) {
+        return -1;
+    }
+
+    return found - (b->buff + b->reader);
 }
