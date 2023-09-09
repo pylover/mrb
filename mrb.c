@@ -1,8 +1,9 @@
 #include "mrb.h"
 
-#include <clog.h>
-
+#include <err.h>
 #include <unistd.h>
+#include <string.h>
+#include <stdio.h>
 #include <errno.h>
 #include <sys/mman.h>
 
@@ -26,8 +27,8 @@ mrb_init(struct mrb *b, size_t size) {
 
     /* Calculate the real size (multiple of pagesize). */
     if (size % pagesize) {
-        ERROR(
-            "Invalid size: %lu, size should be multiple of pagesize (%lu), "
+        warn(
+            "Invalid size: %lu, size should be multiple of pagesize (%d), "
             "see getpagesize(2).",
             size,
             pagesize

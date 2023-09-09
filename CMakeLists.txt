@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.7)
 project(mrb 
-    VERSION 2.2.0
+    VERSION 2.3.0
     LANGUAGES C
 )
 
@@ -57,7 +57,7 @@ set(VALGRIND_FLAGS
 
 # Test Magic ringbuffer
 add_executable(mrb_test mrb_test.c)
-target_link_libraries(mrb_test PUBLIC mrb clog)
+target_link_libraries(mrb_test PUBLIC mrb)
 add_test(NAME mrb_test COMMAND mrb_test)
 add_custom_target(profile_mrb_test
     COMMAND "valgrind" 

@@ -1,6 +1,5 @@
 #include "mrb.h"
 
-#include <clog.h>
 #include <cutest.h>
 #include <unistd.h>
 #include <errno.h>
