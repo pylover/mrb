@@ -302,6 +302,7 @@ mrb_writeout(struct mrb *b, int fd, size_t size) {
 
 
 /** Search for the specified string within buffer
+  Return -1 if not found.
   */
 ssize_t
 mrb_search(struct mrb *b, const char *needle, size_t needlelen, size_t start,
