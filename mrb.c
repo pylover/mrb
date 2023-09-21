@@ -302,14 +302,25 @@ mrb_print(struct mrb *b, const char *format, ...) {
         va_start(args, format);
     }
 
-    int written = vsnprintf(b->buff + b->writer, mrb_available(b), format,
-            args);
-    if (written > 0) {
-        b->writer = (b->writer + written) % b->size;
-    }
+    int written = mrb_vprint(b, format, args);
 
     if (format) {
         va_end(args);
+    }
+
+    return written;
+}
+
+
+/** Print formatted string into buffer
+  */
+int
+mrb_vprint(struct mrb *b, const char *format, va_list args) {
+    int written = vsnprintf(b->buff + b->writer, mrb_available(b), format,
+            args);
+
+    if (written > 0) {
+        b->writer = (b->writer + written) % b->size;
     }
 
     return written;

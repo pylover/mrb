@@ -3,6 +3,7 @@
 
 
 #include <stdlib.h>
+#include <stdarg.h>
 #include <stdbool.h>
 
 
@@ -84,6 +85,10 @@ mrb_search(struct mrb *b, const char *needle, size_t needlelen, size_t start,
 
 int
 mrb_print(struct mrb *b, const char *format, ...);
+
+
+int
+mrb_vprint(struct mrb *b, const char *format, va_list args);
 
 
 #endif
