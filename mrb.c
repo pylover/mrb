@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <errno.h>
 #include <sys/mman.h>
 
@@ -248,6 +249,8 @@ mrb_softget(struct mrb *b, char *dest, size_t size, size_t offset) {
 }
 
 
+/** Tail drop
+  */
 int
 mrb_skip(struct mrb *b, size_t size) {
     if (mrb_used(b) < size) {
@@ -286,6 +289,30 @@ mrb_readin(struct mrb *b, int fd, size_t size) {
         b->writer = (b->writer + res) % b->size;
     }
     return res;
+}
+
+
+/** Print formatted string into buffer
+  */
+int
+mrb_print(struct mrb *b, const char *format, ...) {
+    va_list args;
+
+    if (format) {
+        va_start(args, format);
+    }
+
+    int written = vsnprintf(b->buff + b->writer, mrb_available(b), format,
+            args);
+    if (written > 0) {
+        b->writer = (b->writer + written) % b->size;
+    }
+
+    if (format) {
+        va_end(args);
+    }
+
+    return written;
 }
 
 

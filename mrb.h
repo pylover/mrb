@@ -82,4 +82,8 @@ mrb_search(struct mrb *b, const char *needle, size_t needlelen, size_t start,
         ssize_t limit);
 
 
+int
+mrb_print(struct mrb *b, const char *format, ...);
+
+
 #endif

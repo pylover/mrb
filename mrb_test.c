@@ -232,8 +232,6 @@ void
 test_mrb_search() {
     /* Setup */
     size_t size = getpagesize();
-    char in[size];
-    char out[size];
     mrb_t b = mrb_create(size);
 
     mrb_put(b, "foobarbazqux", 12);
@@ -256,6 +254,20 @@ test_mrb_search() {
 }
 
 
+void
+test_mrb_print() {
+    /* Setup */
+    size_t size = getpagesize();
+    char out[size];
+    mrb_t b = mrb_create(size);
+
+    eqint(9, mrb_print(b, "foo%sbaz", "bar"));
+
+    eqint(9, mrb_get(b, out, 9));
+    eqnstr("foobarbaz", out, 9);
+}
+
+
 int main() {
     test_mrb_create_close();
     test_mrb_init_deinit();
@@ -265,5 +277,6 @@ int main() {
     test_mrb_put_getmin();
     test_mrb_readin_writeout();
     test_mrb_search();
+    test_mrb_print();
     return EXIT_SUCCESS;
 }
