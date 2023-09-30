@@ -206,7 +206,7 @@ mrb_isfull(struct mrb *b) {
 /** Copy data from a caller location to the magic ring buffer.
  */
 size_t
-mrb_put(struct mrb *b, char *source, size_t size) {
+mrb_put(struct mrb *b, const char *restrict source, size_t size) {
     size_t amount = MIN(size, mrb_available(b));
     memcpy(b->buff + b->writer, source, amount);
     b->writer = (b->writer + amount) % b->size;
@@ -217,7 +217,7 @@ mrb_put(struct mrb *b, char *source, size_t size) {
 /** Copy data to the magic ring buffer only if all of it will fit.
  */
 int
-mrb_putall(struct mrb *b, char *source, size_t size) {
+mrb_putall(struct mrb *b, const char *restrict source, size_t size) {
     if (size > mrb_available(b)) {
         return -1;
     }

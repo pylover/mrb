@@ -35,11 +35,11 @@ mrb_used(struct mrb *b);
 
 
 size_t
-mrb_put(struct mrb *b, char *source, size_t size);
+mrb_put(struct mrb *b, const char *restrict source, size_t size);
 
 
 int
-mrb_putall(struct mrb *b, char *source, size_t size);
+mrb_putall(struct mrb *b, const char *restrict source, size_t size);
 
 
 size_t
