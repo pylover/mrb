@@ -22,7 +22,7 @@ struct mrb {
 
 
 int
-mrb_init(struct mrb *b, size_t size) {
+mrb_validatesize(size_t size) {
     int pagesize = getpagesize();
 
     /* Calculate the real size (multiple of pagesize). */
@@ -33,6 +33,24 @@ mrb_init(struct mrb *b, size_t size) {
             size,
             pagesize
         );
+        return -1;
+    }
+
+    return 0;
+}
+
+
+size_t
+mrb_calcsize(unsigned int pages) {
+    int pagesize = getpagesize();
+
+    return pagesize * pages;
+}
+
+
+int
+mrb_init(struct mrb *b, size_t size) {
+    if (mrb_validatesize(size)) {
         return -1;
     }
 

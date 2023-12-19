@@ -11,6 +11,14 @@ typedef struct mrb *mrb_t;
 
 
 int
+mrb_validatesize(size_t size);
+
+
+size_t
+mrb_calcsize(unsigned int pages);
+
+
+int
 mrb_init(struct mrb *b, size_t size);
 
 
