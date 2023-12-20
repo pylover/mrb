@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 #include <stdarg.h>
 #include <sys/mman.h>
 
@@ -358,7 +359,15 @@ mrb_writeout(struct mrb *b, int fd, size_t size) {
 
 
 /** Search for the specified string within buffer
-  Return -1 if not found.
+
+
+  limit argument will be ignored if it's value is 0 or greater than data available
+  in the buffer.
+
+  if start is greater than data available in the buffer, then -1 is returned,
+  and errno set to indicate the error. <- TODO
+
+  Return: Index of the first occurance or -1 if not found.
   */
 ssize_t
 mrb_search(struct mrb *b, const char *needle, size_t needlelen, size_t start,
@@ -372,7 +381,12 @@ mrb_search(struct mrb *b, const char *needle, size_t needlelen, size_t start,
     }
 
     used = mrb_used(b);
-    if (limit == -1) {
+    if ((start < 0) || (start >= used)) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    if (limit <= 0) {
         limit = used;
     }
     else {
@@ -380,9 +394,6 @@ mrb_search(struct mrb *b, const char *needle, size_t needlelen, size_t start,
     }
 
     s = b->buff + b->reader;
-    if (start >= used) {
-        return -1;
-    }
     s += start;
 
     found = memmem(s, limit, needle, needlelen);
