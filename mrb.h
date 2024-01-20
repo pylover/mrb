@@ -99,4 +99,8 @@ int
 mrb_vprint(struct mrb *b, const char *format, va_list args);
 
 
+int
+mrb_rollback(struct mrb *b, size_t size);
+
+
 #endif

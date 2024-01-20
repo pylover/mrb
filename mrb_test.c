@@ -268,6 +268,41 @@ test_mrb_print() {
 }
 
 
+void
+test_mrb_skip_rollback() {
+    size_t size = getpagesize();
+    mrb_t b = mrb_create(size);
+    char out[size];
+
+    /* put 9 chars to buffer */
+    eqint(9, mrb_put(b, "foobarbaz", 9));
+
+    /* Get 3 chars from buffer */
+    eqint(3, mrb_get(b, out, 3));
+    eqnstr("foo", out, 3);
+    eqint(9, b->writer);
+    eqint(3, b->reader);
+
+    /* skip 3 chars (actually skip "bar" in the "foobarbaz" */
+    eqint(0, mrb_skip(b, 3));
+
+    /* Get 3 chars from buffer */
+    eqint(3, mrb_get(b, out, 3));
+    eqnstr("baz", out, 3);
+    eqint(9, b->writer);
+    eqint(9, b->reader);
+
+    /* rollback 3 chars */
+    eqint(0, mrb_rollback(b, 6));
+
+    /* Get 3 chars from buffer */
+    eqint(3, mrb_get(b, out, 3));
+    eqnstr("bar", out, 3);
+    eqint(9, b->writer);
+    eqint(6, b->reader);
+}
+
+
 int main() {
     test_mrb_create_close();
     test_mrb_init_deinit();
@@ -278,5 +313,6 @@ int main() {
     test_mrb_readin_writeout();
     test_mrb_search();
     test_mrb_print();
+    test_mrb_skip_rollback();
     return EXIT_SUCCESS;
 }

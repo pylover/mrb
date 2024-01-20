@@ -279,6 +279,18 @@ mrb_skip(struct mrb *b, size_t size) {
 }
 
 
+/** Rollback reader
+  */
+int
+mrb_rollback(struct mrb *b, size_t size) {
+    if (mrb_used(b) > size) {
+        return -1;
+    }
+    b->reader = (b->reader - size) % b->size;
+    return 0;
+}
+
+
 /** Get data from a magic ring buffer and copy it to the space provider by
   the caller only if the minimum specified amount can be copied. If less data
   than the minimum is available, then no data is copied.
