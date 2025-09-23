@@ -403,3 +403,9 @@ mrb_search(struct mrb *b, const char *needle, size_t needlelen, size_t start,
 
     return found - (b->buff + b->reader);
 }
+
+
+char *
+mrb_readerptr(struct mrb *b) {
+    return b->buff + b->reader;
+}

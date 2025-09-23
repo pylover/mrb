@@ -18,6 +18,7 @@ size_t
 mrb_calcsize(unsigned int pages);
 
 
+// TODO: delete it
 int
 mrb_init(struct mrb *b, size_t size);
 
@@ -26,6 +27,7 @@ struct mrb *
 mrb_create(size_t size);
 
 
+// TODO: delete it
 int
 mrb_deinit(struct mrb *b);
 
@@ -97,6 +99,10 @@ mrb_print(struct mrb *b, const char *format, ...);
 
 int
 mrb_vprint(struct mrb *b, const char *format, va_list args);
+
+
+char *
+mrb_readerptr(struct mrb *b);
 
 
 #endif
