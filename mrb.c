@@ -14,14 +14,6 @@
 #endif
 
 
-struct mrb {
-    unsigned char *buff;
-    size_t size;
-    int writer;
-    int reader;
-};
-
-
 int
 mrb_validatesize(size_t size) {
     int pagesize = getpagesize();

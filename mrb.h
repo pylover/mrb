@@ -7,7 +7,12 @@
 #include <stdbool.h>
 
 
-typedef struct mrb *mrb_t;
+struct mrb {
+    unsigned char *buff;
+    size_t size;
+    int writer;
+    int reader;
+};
 
 
 int
