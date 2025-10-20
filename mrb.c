@@ -15,48 +15,23 @@
 
 
 int
-mrb_validatesize(size_t size) {
+mrb_init(struct mrb *b, unsigned int mempages) {
     int pagesize = getpagesize();
+    FILE *file;
+    int fd;
+    unsigned char *first;
+    unsigned char *second;
 
-    /* Calculate the real size (multiple of pagesize). */
-    if (size % pagesize) {
-        warn(
-            "Invalid size: %lu, size should be multiple of pagesize (%d), "
-            "see getpagesize(2).",
-            size,
-            pagesize
-        );
-        return -1;
-    }
-
-    return 0;
-}
-
-
-size_t
-mrb_calcsize(unsigned int pages) {
-    int pagesize = getpagesize();
-
-    return pagesize * pages;
-}
-
-
-int
-mrb_init(struct mrb *b, size_t size) {
-    if (mrb_validatesize(size)) {
-        return -1;
-    }
-
-    b->size = size;
+    b->size = pagesize * mempages;
     b->writer = 0;
     b->reader = 0;
 
     /* Create a temporary file with requested size as the backend for mmap. */
-    FILE *file = tmpfile();
-    const int fd = fileno(file);
+    file = tmpfile();
+    fd = fileno(file);
     ftruncate(fd, b->size);
 
-    /* Allocate the underlying backed buffer. */
+    /* allocate the underlying backed buffer. */
     b->buff = mmap(
             NULL,
             b->size * 2,
@@ -71,7 +46,7 @@ mrb_init(struct mrb *b, size_t size) {
         return -1;
     }
 
-    unsigned char *first = mmap(
+    first = mmap(
             b->buff,
             b->size,
             PROT_READ | PROT_WRITE,
@@ -87,7 +62,7 @@ mrb_init(struct mrb *b, size_t size) {
         return -1;
     }
 
-    unsigned char *second = mmap(
+    second = mmap(
             b->buff + b->size,
             b->size,
             PROT_READ | PROT_WRITE,
@@ -108,25 +83,6 @@ mrb_init(struct mrb *b, size_t size) {
 }
 
 
-struct mrb *
-mrb_create(size_t size) {
-    struct mrb *b;
-
-    /* Allocate memory for mrb structure. */
-    b = malloc(sizeof(struct mrb));
-    if (b == NULL) {
-        return NULL;
-    }
-
-    if (mrb_init(b, size)) {
-        free(b);
-        return NULL;
-    }
-
-    return b;
-}
-
-
 int
 mrb_deinit(struct mrb *b) {
     /* unmap second part */
@@ -144,24 +100,6 @@ mrb_deinit(struct mrb *b) {
         return -1;
     }
     return 0;
-}
-
-
-int
-mrb_destroy(struct mrb *b) {
-    if (mrb_deinit(b)) {
-        return -1;
-    }
-    free(b);
-    return 0;
-}
-
-
-/** Obtain the total buffer capacity of a VRB.
- */
-size_t
-mrb_size(struct mrb *b) {
-    return b->size;
 }
 
 

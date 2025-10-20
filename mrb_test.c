@@ -20,7 +20,7 @@ void
 test_mrb_init_deinit() {
     size_t size = getpagesize();
     struct mrb b;
-    eqint(0, mrb_init(&b, size));
+    eqint(0, mrb_init(&b, 1));
     eqint(0, errno);
 
     isnotnull(b.buff);
@@ -42,7 +42,7 @@ test_mrb_put_get() {
     char out[size];
     int ufd = rand_open();
     struct mrb b;
-    eqint(0, mrb_init(&b, size));
+    eqint(0, mrb_init(&b, 1));
 
     /* Put 3 chars */
     eqint(3, mrb_put(&b, "foo", 3));
@@ -84,7 +84,7 @@ test_mrb_isfull_isempty() {
     char out[size];
     int ufd = rand_open();
     struct mrb b;
-    eqint(0, mrb_init(&b, size));
+    eqint(0, mrb_init(&b, 1));
     istrue(mrb_isempty(&b));
 
     /* Provide some random data and put them */
@@ -117,7 +117,7 @@ test_mrb_putall() {
     char in[size];
     int ufd = rand_open();
     struct mrb b;
-    eqint(0, mrb_init(&b, size));
+    eqint(0, mrb_init(&b, 1));
 
     /* Provide some random data and put them */
     read(ufd, in, size);
@@ -137,7 +137,7 @@ test_mrb_put_getmin() {
     char in[size];
     char out[size];
     struct mrb b;
-    eqint(0, mrb_init(&b, size));
+    eqint(0, mrb_init(&b, 1));
 
     /* Put 3 chars */
     eqint(3, mrb_put(&b, "foo", 3));
@@ -179,7 +179,7 @@ test_mrb_readin_writeout() {
     struct tfile infile = tmpfile_open();
     struct tfile outfile = tmpfile_open();
     struct mrb b;
-    eqint(0, mrb_init(&b, size));
+    eqint(0, mrb_init(&b, 1));
 
     /* Provide some random data and put them */
     read(ufd, in, size);
@@ -212,7 +212,7 @@ test_mrb_search() {
     /* Setup */
     size_t size = getpagesize();
     struct mrb b;
-    eqint(0, mrb_init(&b, size));
+    eqint(0, mrb_init(&b, 1));
 
     mrb_put(&b, "foobarbazqux", 12);
 
@@ -243,7 +243,7 @@ test_mrb_print() {
     size_t size = getpagesize();
     char out[size];
     struct mrb b;
-    eqint(0, mrb_init(&b, size));
+    eqint(0, mrb_init(&b, 1));
 
     eqint(9, mrb_print(&b, "foo%sbaz", "bar"));
 

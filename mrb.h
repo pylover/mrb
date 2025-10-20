@@ -16,29 +16,11 @@ struct mrb {
 
 
 int
-mrb_validatesize(size_t size);
+mrb_init(struct mrb *b, unsigned int mempages);
 
 
-size_t
-mrb_calcsize(unsigned int pages);
-
-
-// TODO: delete it
-int
-mrb_init(struct mrb *b, size_t size);
-
-
-struct mrb *
-mrb_create(size_t size);
-
-
-// TODO: delete it
 int
 mrb_deinit(struct mrb *b);
-
-
-int
-mrb_destroy(struct mrb *b);
 
 
 size_t
