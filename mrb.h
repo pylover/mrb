@@ -23,6 +23,10 @@ int
 mrb_deinit(struct mrb *b);
 
 
+void
+mrb_reset(struct mrb *b);
+
+
 size_t
 mrb_available(struct mrb *b);
 

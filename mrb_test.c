@@ -35,6 +35,24 @@ test_mrb_init_deinit() {
 
 
 void
+test_mrb_reset() {
+    size_t size = getpagesize();
+    struct mrb b;
+    eqint(0, mrb_init(&b, 1));
+    eqint(0, errno);
+
+    eqint(3, mrb_put(&b, "foo", 3));
+    mrb_reset(&b);
+    isnotnull(b.buff);
+    eqint(size, b.size);
+    eqint(0, b.writer);
+    eqint(0, b.reader);
+
+    eqint(0, mrb_deinit(&b));
+}
+
+
+void
 test_mrb_put_get() {
     /* Setup */
     size_t size = getpagesize();
@@ -257,6 +275,7 @@ test_mrb_print() {
 
 int main() {
     test_mrb_init_deinit();
+    test_mrb_reset();
     test_mrb_put_get();
     test_mrb_isfull_isempty();
     test_mrb_putall();

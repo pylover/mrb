@@ -103,6 +103,13 @@ mrb_deinit(struct mrb *b) {
 }
 
 
+void
+mrb_reset(struct mrb *b) {
+    b->reader = 0;
+    b->writer = 0;
+}
+
+
 /** Obtain the length of empty space in the buffer.
  */
 size_t
