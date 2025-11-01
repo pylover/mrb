@@ -76,6 +76,10 @@ mrb_readin(struct mrb *b, int fd, size_t size);
 
 
 ssize_t
+mrb_readallin(struct mrb *b, int fd);
+
+
+ssize_t
 mrb_writeout(struct mrb *b, int fd, size_t size);
 
 

@@ -182,11 +182,29 @@ mrb_putall(struct mrb *b, const char *restrict source, size_t size) {
 }
 
 
-/** Copy data from the magic ring buffer to a caller location.
+/** Attempts to copy up to size bytes into the dest pointer.
  */
 size_t
 mrb_get(struct mrb *b, char *dest, size_t size) {
     size_t amount = MIN(size, mrb_used(b));
+
+    memcpy(dest, b->buff + b->reader, amount);
+    b->reader = (b->reader + amount) % b->size;
+    return amount;
+}
+
+
+/** Get data from a magic ring buffer and copy it to the space provider by
+  the caller only if the minimum specified amount can be copied. If less data
+  than the minimum is available, then no data is copied.
+ */
+ssize_t
+mrb_getmin(struct mrb *b, char *dest, size_t minsize, size_t maxsize) {
+    size_t used = mrb_used(b);
+    if (minsize > used) {
+        return -1;
+    }
+    size_t amount = MIN(maxsize, used);
     memcpy(dest, b->buff + b->reader, amount);
     b->reader = (b->reader + amount) % b->size;
     return amount;
@@ -211,25 +229,9 @@ mrb_skip(struct mrb *b, size_t size) {
     if (mrb_used(b) < size) {
         return -1;
     }
+
     b->reader = (b->reader + size) % b->size;
     return 0;
-}
-
-
-/** Get data from a magic ring buffer and copy it to the space provider by
-  the caller only if the minimum specified amount can be copied. If less data
-  than the minimum is available, then no data is copied.
- */
-ssize_t
-mrb_getmin(struct mrb *b, char *dest, size_t minsize, size_t maxsize) {
-    size_t used = mrb_used(b);
-    if (minsize > used) {
-        return -1;
-    }
-    size_t amount = MIN(maxsize, used);
-    memcpy(dest, b->buff + b->reader, amount);
-    b->reader = (b->reader + amount) % b->size;
-    return amount;
 }
 
 
@@ -243,6 +245,21 @@ mrb_readin(struct mrb *b, int fd, size_t size) {
     if (res > 0) {
         b->writer = (b->writer + res) % b->size;
     }
+
+    return res;
+}
+
+
+/** read(2) data as much as posible  into a magic ring buffer until EOF or
+  full, or I/O would block.
+ */
+ssize_t
+mrb_readallin(struct mrb *b, int fd) {
+    ssize_t res = read(fd, b->buff + b->writer, mrb_available(b));
+    if (res > 0) {
+        b->writer = (b->writer + res) % b->size;
+    }
+
     return res;
 }
 
