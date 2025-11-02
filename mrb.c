@@ -251,11 +251,22 @@ mrb_readin(struct mrb *b, int fd, size_t size) {
 
 
 /** read(2) data as much as posible  into a magic ring buffer until EOF or
-  full, or I/O would block.
+ * full, or I/O would block.
+ * returns:
+ * -2: if buffer is full
+ * -1: read error
+ *  0: EOF
+ *  N: number of bytes read
  */
 ssize_t
 mrb_readallin(struct mrb *b, int fd) {
-    ssize_t res = read(fd, b->buff + b->writer, mrb_available(b));
+    size_t avail = mrb_available(b);
+
+    if (avail == 0) {
+        return -2;
+    }
+
+    ssize_t res = read(fd, b->buff + b->writer, avail);
     if (res > 0) {
         b->writer = (b->writer + res) % b->size;
     }
