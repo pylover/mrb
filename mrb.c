@@ -250,7 +250,7 @@ mrb_readin(struct mrb *b, int fd, size_t size) {
 }
 
 
-/** read(2) data as much as posible  into a magic ring buffer until EOF or
+/** read(2) data as much as posible into a magic ring buffer until EOF or
  * full, or I/O would block.
  * returns:
  * -2: if buffer is full
